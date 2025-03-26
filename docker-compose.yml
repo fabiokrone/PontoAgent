@@ -23,7 +23,8 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data/
-      - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/01-init.sql
+      - ./docker/postgres/populate_initial_data.sql:/docker-entrypoint-initdb.d/02-populate.sql
     env_file:
       - .env
     environment:
@@ -34,8 +35,24 @@ services:
       - ponto-network
     restart: unless-stopped
 
+  pgadmin:
+    image: dpage/pgadmin4
+    ports:
+      - "5050:80"
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=${PGADMIN_EMAIL}
+      - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_PASSWORD}
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      - db
+    networks:
+      - ponto-network
+    restart: unless-stopped
+
 volumes:
   postgres_data:
+  pgadmin_data:  # Adicionado para persistir configurações do pgAdmin
 
 networks:
   ponto-network:
